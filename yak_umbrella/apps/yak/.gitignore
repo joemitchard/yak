@@ -1,17 +1,19 @@
-**/_build
-**/cover
-**/deps
-**/doc
-**/erl_crash.dump
-**/*.ez
+# App artifacts
+/_build
+/db
+/deps
+/*.ez
+
+# Generated on crash by the VM
+erl_crash.dump
 
 # Static artifacts
-yak_umbrella/apps/yak/node_modules
+/node_modules
 
 # Since we are building assets from web/static,
 # we ignore priv/static. You may want to comment
 # this depending on your deployment strategy.
-yak_umbrella/apps/yak/priv/static/
+/priv/static/
 
 # The config/prod.secret.exs file by default contains sensitive
 # data and you should not commit it into version control.
@@ -19,4 +21,4 @@ yak_umbrella/apps/yak/priv/static/
 # Alternatively, you may comment the line below and commit the
 # secrets file as long as you replace its contents by environment
 # variables.
-yak_umbrella/apps/yak/config/prod.secret.exs
+/config/prod.secret.exs
