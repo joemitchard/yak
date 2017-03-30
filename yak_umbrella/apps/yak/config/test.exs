@@ -17,3 +17,6 @@ config :yak, Yak.Repo,
   database: "yak_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
+
+# limits rounds of encryption for testing
+config :comeonin, :bcrypt_log_rounds, 4

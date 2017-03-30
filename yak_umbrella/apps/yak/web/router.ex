@@ -16,7 +16,11 @@ defmodule Yak.Router do
   scope "/", Yak do
     pipe_through :browser # Use the default browser stack
 
+    # route
     get "/", PageController, :index
+
+    resources "/users", UserController, only: [:index, :show, :new, :create]
+
   end
 
   # Other scopes may use custom stacks.
