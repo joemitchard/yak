@@ -11,3 +11,8 @@ Install the phoenix hex archive
 Setup
 `mix deps.get`
 `mix compile`
+
+cd into apps/yak
+`mix ecto.create`
+`mix ecto.migrate`
+`mix phoenix.server`
