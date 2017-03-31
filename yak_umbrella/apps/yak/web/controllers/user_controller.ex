@@ -1,6 +1,9 @@
 defmodule Yak.UserController do
   use Yak.Web, :controller
 
+  # Ensures that a user will be authenticated for index/show
+  plug :authenticate_user when action in [:index, :show]
+
   alias Yak.User
 
   def index(conn, _params) do
@@ -26,7 +29,7 @@ defmodule Yak.UserController do
         conn
         |> put_flash(:info, "#{user.name} created!")
         |> redirect(to: user_path(conn, :index))
-        
+
       {:error, changeset} ->
         render(conn, "new.html", changeset: changeset)
     end

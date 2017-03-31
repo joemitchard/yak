@@ -36,6 +36,8 @@ defmodule Yak.Web do
 
       import Yak.Router.Helpers
       import Yak.Gettext
+      # make authentication avaiable to controllers
+      import Yak.Auth, only: [authenticate_user: 2]
     end
   end
 
