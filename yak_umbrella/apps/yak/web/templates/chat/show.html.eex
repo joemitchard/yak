@@ -1,0 +1,23 @@
+<h2><%= @chat.name %></h2>
+<div class="row">
+  <div class="col-sm-3">
+    Users listing and stuff
+  </div>
+  <div class="col-sm-9">
+      <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Messages</h3>
+      </div>
+      <div id="msg-container" class="panel-body messages">
+        <!-- Message box -->
+      </div>
+      <div class="panel-footer">
+        <textarea id="msg-input"
+                  rows="3"
+                  class="form-control"
+                  placeholder="Blah..."></textarea>
+        <button id="msg-submit" class="btn btn-primary form-control" type="submit">Post</button>
+      </div>
+    </div>
+  </div>
+</div>

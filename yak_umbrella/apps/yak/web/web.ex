@@ -60,6 +60,7 @@ defmodule Yak.Web do
   def router do
     quote do
       use Phoenix.Router
+      import Yak.Auth, only: [authenticate_user: 2]
     end
   end
 

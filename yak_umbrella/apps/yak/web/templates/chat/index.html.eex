@@ -1,0 +1,20 @@
+<h2>Chats</h2>
+
+<table class="table">
+  <thead>
+    <th>Name</th>
+    <th>User</th>
+    <th>Description</th>
+    <th></th>
+  </thead> 
+  <%= for chat <- @chats do %>
+    <tr>
+      <td><%= chat.name %></td>
+      <td><%= chat.user_id %></td>
+      <td><%= chat.description %></td>
+      <td class="text-right">
+        <%= link "Go", to: chat_path(@conn, :show, chat), class: "btn btn-default btn-xs" %>
+      </td>
+    </tr>
+  <% end %>
+ </table>
