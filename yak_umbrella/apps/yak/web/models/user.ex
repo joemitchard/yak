@@ -8,7 +8,8 @@ defmodule Yak.User do
     field :password,      :string, virtual: true
     field :password_hash, :string
 
-    has_many :chats, Yak.Chat
+    has_many :chats,      Yak.Chat
+    has_many :messages,   Yak.Message
 
     timestamps()
   end

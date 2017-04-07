@@ -73,9 +73,10 @@ defmodule Yak.Auth do
   end
 
   defp put_current_user(conn, user) do
-    # handle token here when channel implemented
+    token = Phoenix.Token.sign(conn, "user socket", user.id)
 
     conn
     |> assign(:current_user, user)
+    |> assign(:user_token, token)
   end
 end

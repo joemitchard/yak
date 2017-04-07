@@ -1,6 +1,6 @@
 defmodule Yak.ChatController do
   @moduledoc """
-  Module for chat management and indexing
+  Module for chat management
   
   Show uses ChatChannel
   """
@@ -17,11 +17,17 @@ defmodule Yak.ChatController do
       [conn, conn.params, conn.assigns.current_user])
   end
 
+  @doc """
+  A listing of all chats for the user
+  """
   def index(conn, _params, user) do
     chats = Repo.all(user_chats(user))
     render(conn, "index.html", chats: chats)
   end
 
+  @doc """
+  Manages the page for chat creaton and validation
+  """
   def new(conn, _params, user) do
     changeset = 
       user
@@ -30,6 +36,9 @@ defmodule Yak.ChatController do
     render(conn, "new.html", changeset: changeset)
   end
 
+  @doc """
+  Handles the creation action for a chat
+  """
   def create(conn, %{"chat" => chat_params}, user) do
     changeset = 
       user
@@ -46,8 +55,14 @@ defmodule Yak.ChatController do
     end
   end
 
-  def show(conn, %{"id" => id}, user) do
-    chat = Repo.get!(user_chats(user), id)
+  # TODO -> move this out of chat management... would be better places
+  # in a non user dependent controller for public access.
+  
+  @doc """
+  Shows a chat, and opens up a ChatChannel
+  """
+  def show(conn, %{"id" => id}, _user) do
+    chat = Repo.get!(Chat, id)
     render(conn, "show.html", chat: chat)
   end
 

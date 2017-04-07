@@ -4,6 +4,8 @@
     Users listing and stuff
   </div>
   <div class="col-sm-9">
+      <%= content_tag :div, id: "chat", data: [id: @chat.id] do %>
+      <% end %>
       <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title">Messages</h3>
