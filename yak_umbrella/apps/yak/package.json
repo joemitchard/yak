@@ -1,4 +1,6 @@
 {
+  "name": "yak",
+  "version": "0.1.0",
   "repository": {},
   "license": "MIT",
   "scripts": {
@@ -6,6 +8,7 @@
     "watch": "brunch watch --stdin"
   },
   "dependencies": {
+    "dom-tree": "^1.0.0",
     "phoenix": "file:../../deps/phoenix",
     "phoenix_html": "file:../../deps/phoenix_html"
   },

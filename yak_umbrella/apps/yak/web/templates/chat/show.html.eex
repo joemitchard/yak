@@ -1,8 +1,22 @@
 <h2><%= @chat.name %></h2>
 <div class="row">
   <div class="col-sm-3">
-    Users listing and stuff
+
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        Users
+      </div>
+      <div class="panel-body">
+        <!--<div id="user-container" class=""> -->
+          <!-- Users list  -->
+        <!--</div>-->
+        <%= content_tag :div, id: "user-container", data: [user_id: @current_user.id] do %>
+        <% end %>
+      </div>
+    </div>
+    
   </div>
+
   <div class="col-sm-9">
       <%= content_tag :div, id: "chat", data: [id: @chat.id] do %>
       <% end %>

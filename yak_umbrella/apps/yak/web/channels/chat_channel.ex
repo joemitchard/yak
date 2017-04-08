@@ -2,6 +2,8 @@ defmodule Yak.ChatChannel do
   use Yak.Web, :channel
 
   alias Yak.MessageView
+  alias Yak.UserView
+  alias Yak.ChannelMonitor
 
   @doc """
   Handles join requests from the client
@@ -9,6 +11,9 @@ defmodule Yak.ChatChannel do
   """
   def join("chats:" <> chat_id, params, socket) do
     last_seen_id = params["last_seen_id"] || 0
+
+    user = Repo.get(Yak.User, socket.assigns.user_id)
+
     chat_id = String.to_integer(chat_id)
     chat = Repo.get!(Yak.Chat, chat_id)
 
@@ -21,10 +26,31 @@ defmodule Yak.ChatChannel do
         preload: [:user]
     )
 
+    current_users = ChannelMonitor.join(chat_id, user)
+
+    send self(), {:new_user, user}
+
     # Adds a bunch of jsonified messages in the response payload
-    resp = %{messages: Phoenix.View.render_many(messages, MessageView, "message.json")}
+    resp = %{
+      messages: Phoenix.View.render_many(messages, MessageView, "message.json"),
+      users: Phoenix.View.render_many(current_users, UserView, "user.json")
+    }
 
     {:ok, resp, assign(socket, :chat_id, chat_id)}
+  end
+
+  @doc """
+  Handles users leaving the chat
+  """
+  def terminate(_reason, socket) do
+    user_id = socket.assigns.user_id
+    chat_id = socket.assigns.chat_id
+
+    users = ChannelMonitor.leave(chat_id, user_id)
+  
+    broadcast_users_update(socket, users)
+
+    :ok
   end
 
   @doc """
@@ -57,6 +83,29 @@ defmodule Yak.ChatChannel do
     end
   end
 
+  @doc """
+  Handle a new user entering into the channel
+  """
+  def handle_info({:new_user, user}, socket) do
+    broadcast_new_user(socket, user)
+    {:noreply, socket}
+  end
+
+  # inform clients of a new user joining
+  defp broadcast_new_user(socket, user) do
+    broadcast! socket, "new_user", Phoenix.View.render(UserView, "user.json", %{user: user})
+  end
+
+  # provide an updated users list to clients
+  defp broadcast_users_update(socket, users) do
+    msg = %{
+      users: Phoenix.View.render_many(users, UserView, "user.json")
+    }
+
+    broadcast! socket, "user_left", msg
+  end
+
+  # Send the clients a message
   defp broadcast_message(socket, message) do
     # ensure user is loaded
     message = Repo.preload(message, :user)

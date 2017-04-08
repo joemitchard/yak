@@ -14,6 +14,7 @@ defmodule Yak do
       supervisor(Yak.Endpoint, []),
       # Start your own worker by calling: Yak.Worker.start_link(arg1, arg2, arg3)
       # worker(Yak.Worker, [arg1, arg2, arg3]),
+      worker(Yak.ChannelMonitor, [%Yak.User{}])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
