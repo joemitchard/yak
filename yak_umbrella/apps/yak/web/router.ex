@@ -28,7 +28,7 @@ defmodule Yak.Router do
   scope "/yak", Yak do
     pipe_through [:browser, :authenticate_user]
 
-    resources "/chats", ChatController
+    resources "/chats", ChatController, only: [:index, :show, :new, :create]
   end
 
   # Other scopes may use custom stacks.

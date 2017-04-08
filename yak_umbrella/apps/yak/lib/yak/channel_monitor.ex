@@ -1,8 +1,6 @@
 defmodule Yak.ChannelMonitor do
   use GenServer
 
-  # todo, refactor this out to an agent
-
   # API
   @doc """
   Start the gen server, naming it as __MODULE__
