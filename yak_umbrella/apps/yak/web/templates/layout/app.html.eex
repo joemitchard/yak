@@ -18,13 +18,14 @@
         <ol class="breadcrumb text-right">
           <%= if @current_user do %>
             <li><%= @current_user.username %></li>
+            <li><%= link "My Chats", to: chat_path(@conn, :index) %></li>
             <li><%= link "Log out", to: session_path(@conn, :delete, @current_user), method: "delete" %></li>
           <% else %>
             <li><%= link "Register", to: user_path(@conn, :new) %></li>
             <li><%= link "Login", to: session_path(@conn, :new) %></li>
           <% end %>
         </ol>
-        <span class="logo"></span>
+        <span><h1 class="text-center">Yak</h1></span>
       </header>
 
       <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>

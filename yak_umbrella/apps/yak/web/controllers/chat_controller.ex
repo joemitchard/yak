@@ -66,8 +66,41 @@ defmodule Yak.ChatController do
     render(conn, "show.html", chat: chat)
   end
 
+  def list(conn, _params, user) do
+    chats = available_chats(user)
+    render(conn, "list.html", chats: chats)
+  end
+
   # returns an ecto query with the users videos
   defp user_chats(user) do
     assoc(user, :chats)
+  end
+
+  defp available_chats(user) do
+    # change to a proper filer
+    chats = 
+      Repo.all(Chat)
+      |> Repo.preload(:user)
+      |> Enum.filter(fn c -> is_available(c, user) end)
+
+    chats
+  end
+
+  defp is_available(chat, user) do
+    case chat.is_private do
+      # is private, check if user owned
+      true ->
+        case chat.user_id == user.id do
+          true ->
+            true
+
+          false ->
+            false
+        end
+      
+      # is not private, user can see it
+      false ->
+        true
+    end
   end
 end

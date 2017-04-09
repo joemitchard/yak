@@ -55,6 +55,7 @@ defmodule Yak.Auth do
     |> put_current_user(user)
     |> put_session(:user_id, user.id)
     |> configure_session(renew: true)
+    |> redirect(to: Helpers.chat_path(conn, :list))
   end
 
   def logout(conn) do
