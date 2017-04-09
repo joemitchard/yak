@@ -18,7 +18,7 @@ defmodule Yak.ChatController do
   end
 
   @doc """
-  A listing of all chats for the user
+  A listing of all chats for the `user`
   """
   def index(conn, _params, user) do
     chats = Repo.all(user_chats(user))
@@ -66,6 +66,10 @@ defmodule Yak.ChatController do
     render(conn, "show.html", chat: chat)
   end
 
+  @doc """
+  List all the chats available to a user.
+  This renders all public chats and private chats `user` owns.
+  """
   def list(conn, _params, user) do
     chats = available_chats(user)
     render(conn, "list.html", chats: chats)
@@ -77,7 +81,7 @@ defmodule Yak.ChatController do
   end
 
   defp available_chats(user) do
-    # change to a proper filer
+    # change to a proper ecto query
     chats = 
       Repo.all(Chat)
       |> Repo.preload(:user)
@@ -86,21 +90,18 @@ defmodule Yak.ChatController do
     chats
   end
 
+  # Return true if chat is not private.
+  # If it is true, check if user owns it.
   defp is_available(chat, user) do
-    case chat.is_private do
-      # is private, check if user owned
-      true ->
-        case chat.user_id == user.id do
-          true ->
-            true
 
-          false ->
-            false
-        end
-      
-      # is not private, user can see it
-      false ->
+    if chat.is_private do
+      if chat.user_id == user.id do
         true
+      else
+        false
+      end
+    else
+      true
     end
   end
 end

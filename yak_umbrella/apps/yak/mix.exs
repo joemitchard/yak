@@ -42,7 +42,8 @@ defmodule Yak.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.11"},
      {:cowboy, "~> 1.0"},
-     {:comeonin, "~> 3.0"}
+     {:comeonin, "~> 3.0"},
+     {:ex_doc, "~> 0.14", only: :dev, runtime: false}
     ]
   end
 
