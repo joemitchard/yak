@@ -1,12 +1,15 @@
 defmodule Yak.ChannelMonitor do
+  @moduledoc """
+  A GenServer to maintain a map of the current state in each channel.
+  """
   use GenServer
 
   # API
   @doc """
   Start the gen server, naming it as __MODULE__
   """
-  def start_link(init_state) do
-    GenServer.start_link(__MODULE__, init_state, name: __MODULE__)  
+  def start_link() do
+    GenServer.start_link(__MODULE__, %Yak.User{}, name: __MODULE__)  
   end
 
   @doc """

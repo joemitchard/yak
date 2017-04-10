@@ -93,15 +93,13 @@ defmodule Yak.ChatController do
   # Return true if chat is not private.
   # If it is true, check if user owns it.
   defp is_available(chat, user) do
-
-    if chat.is_private do
-      if chat.user_id == user.id do
+    cond do
+      chat.is_private && chat.user_id == user.id ->
         true
-      else
+      chat.is_private ->
         false
-      end
-    else
-      true
+      true ->
+        true
     end
   end
 end

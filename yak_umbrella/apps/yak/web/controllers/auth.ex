@@ -9,10 +9,18 @@ defmodule Yak.Auth do
 
   alias Yak.Router.Helpers
 
+  @doc """
+  Initialises the plug, takes the repo option passed.
+  Fails if no repo option passed
+  """
   def init(opts) do
     Keyword.fetch!(opts, :repo)
   end
 
+  @doc """
+  Call implementation for plug.
+  Handles sessions
+  """
   def call(conn, repo) do
     user_id = get_session(conn, :user_id)
 
@@ -25,12 +33,20 @@ defmodule Yak.Auth do
       user = user_id && repo.get(Yak.User, user_id) ->
         put_current_user(conn, user)
 
-      # catchall
+      # catch all
       true ->
         assign(conn, :current_user, nil)
     end
   end
 
+  @doc """
+  Used to handle logging.
+
+  Asserts that a user exists for `username`, and checks that the `given_pass` 
+  hash equals the users passsword.
+
+  On success, this will use `Yak.Auth.login/2` to manipulate conn
+  """
   def login_with_username_and_pass(conn, username, given_pass, opts) do
     repo = Keyword.fetch!(opts, :repo)
     user = repo.get_by(Yak.User, username: username)
@@ -50,6 +66,11 @@ defmodule Yak.Auth do
     end
   end
 
+  @doc """
+  Manipulates `conn` with session information.
+
+  Redirects to chat directory list
+  """
   def login(conn, user) do
     conn
     |> put_current_user(user)
@@ -58,10 +79,17 @@ defmodule Yak.Auth do
     |> redirect(to: Helpers.chat_path(conn, :list))
   end
 
+  @doc """
+  Drops the session.
+  """
   def logout(conn) do
     configure_session(conn, drop: true)
   end
 
+  @doc """
+  Checks that a user is assigned to `conn`, otherwise prevents processing
+  of the request.
+  """
   def authenticate_user(conn, _opts) do
     if conn.assigns.current_user do
       conn
@@ -73,6 +101,7 @@ defmodule Yak.Auth do
     end
   end
 
+  # Assigns the `user` and a Phoenix Token to `conn`
   defp put_current_user(conn, user) do
     token = Phoenix.Token.sign(conn, "user socket", user.id)
 
