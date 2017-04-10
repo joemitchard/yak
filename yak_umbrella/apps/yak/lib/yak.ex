@@ -8,7 +8,8 @@ defmodule Yak do
       supervisor(Yak.Repo, []),
       supervisor(Yak.Endpoint, []),
 
-      worker(Yak.ChannelMonitor, [])
+      worker(Yak.ChannelMonitor, []),
+      worker(Yak.UserMonitor, [])
     ]
 
     opts = [strategy: :one_for_one, name: Yak.Supervisor]

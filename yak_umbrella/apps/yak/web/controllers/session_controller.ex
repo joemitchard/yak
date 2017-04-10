@@ -17,11 +17,11 @@ defmodule Yak.SessionController do
   Handles login
   """
   def create(conn, %{"session" => %{"username" => user, "password" => pass}}) do
-    case Auth.login_with_username_and_pass(conn, user, pass, repo: Repo) do
+    case Auth.login(conn, user, pass, repo: Repo) do
       {:ok, conn} ->
         conn
         |> put_flash(:info, "Welcome")
-        |> redirect(to: page_path(conn, :index))
+        |> redirect(to: chat_path(conn, :list))
 
       {:error, _reason, conn} ->
         conn

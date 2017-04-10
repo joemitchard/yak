@@ -7,6 +7,7 @@ defmodule Yak.ChatController do
   use Yak.Web, :controller
 
   alias Yak.Chat
+  alias Yak.UserMonitor
 
   @doc """
   Calls controller plug for all actions defined in this controller, 
@@ -57,6 +58,7 @@ defmodule Yak.ChatController do
 
   # TODO -> move this out of chat management... would be better places
   # in a non user dependent controller for public access.
+  # maybe rename the chat management moduel room management, and leave chats seperate
   
   @doc """
   Shows a chat, and opens up a ChatChannel

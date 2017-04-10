@@ -8,6 +8,7 @@ defmodule Yak.Auth do
   import Phoenix.Controller
 
   alias Yak.Router.Helpers
+  alias Yak.UserMonitor
 
   @doc """
   Initialises the plug, takes the repo option passed.
@@ -47,7 +48,7 @@ defmodule Yak.Auth do
 
   On success, this will use `Yak.Auth.login/2` to manipulate conn
   """
-  def login_with_username_and_pass(conn, username, given_pass, opts) do
+  def login(conn, username, given_pass, opts) do
     repo = Keyword.fetch!(opts, :repo)
     user = repo.get_by(Yak.User, username: username)
 
@@ -67,22 +68,25 @@ defmodule Yak.Auth do
   end
 
   @doc """
-  Manipulates `conn` with session information.
+  Manipulates `conn` with session information for `user`.
 
   Redirects to chat directory list
   """
   def login(conn, user) do
+
+    UserMonitor.user_in(user)
+
     conn
     |> put_current_user(user)
     |> put_session(:user_id, user.id)
     |> configure_session(renew: true)
-    |> redirect(to: Helpers.chat_path(conn, :list))
   end
 
   @doc """
   Drops the session.
   """
   def logout(conn) do
+    UserMonitor.user_out(conn.assigns.current_user)
     configure_session(conn, drop: true)
   end
 

@@ -30,6 +30,7 @@ defmodule Yak.Router do
 
     resources "/chats", ChatController, only: [:index, :show, :new, :create]
     get "/chats/list/all", ChatController, :list
+    get "/chats/list/users", ChatController, :users
   end
 
   # Other scopes may use custom stacks.
