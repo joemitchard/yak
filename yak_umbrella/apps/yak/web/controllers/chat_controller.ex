@@ -7,7 +7,6 @@ defmodule Yak.ChatController do
   use Yak.Web, :controller
 
   alias Yak.Chat
-  alias Yak.UserMonitor
 
   @doc """
   Calls controller plug for all actions defined in this controller, 
@@ -60,13 +59,6 @@ defmodule Yak.ChatController do
   # in a non user dependent controller for public access.
   # maybe rename the chat management moduel room management, and leave chats seperate
   
-  @doc """
-  Shows a chat, and opens up a ChatChannel
-  """
-  def show(conn, %{"id" => id}, _user) do
-    chat = Repo.get!(Chat, id)
-    render(conn, "show.html", chat: chat)
-  end
 
   @doc """
   List all the chats available to a user.
@@ -75,6 +67,14 @@ defmodule Yak.ChatController do
   def list(conn, _params, user) do
     chats = available_chats(user)
     render(conn, "list.html", chats: chats)
+  end
+
+  @doc """
+  Shows a chat, and opens up a ChatChannel
+  """
+  def show(conn, %{"id" => id}, _user) do
+    chat = Repo.get!(Chat, id)
+    render(conn, "show.html", chat: chat)
   end
 
   # returns an ecto query with the users videos

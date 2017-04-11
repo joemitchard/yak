@@ -17,6 +17,11 @@
     <%= error_tag f, :description %>
   </div>
 
+  <div>
+    <%= label f, :is_private, class: "control-label" %>
+    <%= checkbox f, :is_private, class: "form-control" %>
+  </div>
+
   <div class="form-group">
     <%= submit "Submit", class: "btn btn-primary" %>
   </div>

@@ -16,4 +16,6 @@ defmodule Yak.Chat do
     |> cast(params, [:name, :description, :is_private, :user_id])
     |> validate_required([:name, :description])
   end
+
+  # for filtering, need a filters changeset and pass that through ecto query
 end

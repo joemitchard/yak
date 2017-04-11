@@ -1,23 +1,23 @@
-<h2>Chats</h2>
+<h2>My Chats</h2>
 
 <table class="table">
   <thead>
     <th colspan="3"></th>
     <th class="text-right">
-      <%= link "New", to: chat_path(@conn, :new), class: "btn btn-default" %>
+      <%= link "New", to: chat_path(@conn, :new), class: "btn btn-primary" %>
     </th>
   </thead>
   <thead>
     <th>Name</th>
-    <th>User</th>
     <th>Description</th>
+    <th>Private</th>
     <th></th>
   </thead>
   <%= for chat <- @chats do %>
     <tr>
       <td><%= chat.name %></td>
-      <td><%= chat.user_id %></td>
       <td><%= chat.description %></td>
+      <td><%= chat.is_private %></td>
       <td class="text-right">
         <%= link "Go", to: chat_path(@conn, :show, chat), class: "btn btn-default btn-xs" %>
       </td>
