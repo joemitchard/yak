@@ -10,6 +10,7 @@ defmodule Graze.Supervisor do
 
   def init(:ok) do
     children = [
+      supervisor(Graze.WorkerSupervisor, []),
       worker(Graze.Server, [])
     ]
 

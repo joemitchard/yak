@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/yak_umbrella/apps/graze/graze.iml" filepath="$PROJECT_DIR$/yak_umbrella/apps/graze/graze.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yak_umbrella/apps/yak/yak.iml" filepath="$PROJECT_DIR$/yak_umbrella/apps/yak/yak.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yak_umbrella/yakumbrella.iml" filepath="$PROJECT_DIR$/yak_umbrella/yakumbrella.iml" />
+    </modules>
+  </component>
+</project>

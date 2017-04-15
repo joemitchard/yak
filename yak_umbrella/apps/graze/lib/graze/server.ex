@@ -9,11 +9,13 @@ defmodule Graze.Server do
   """
   use GenServer
 
-  alias Graze.Parser
+  defmodule State do
+    defstruct monitors: nil 
+  end
 
   ### API ###
   def start_link() do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   def read(message) when is_binary(message) do
@@ -21,22 +23,33 @@ defmodule Graze.Server do
   end
 
   ### SERVER ###
-  def init() do
-    {:ok, %{}}
+  def init(:ok) do
+    monitors = :ets.new(:monitors, [:private])
+    {:ok, %State{monitors: monitors}}
   end
 
-  def handle_call({:read, message}, _from, state) do
-    case Parser.parse(message) do
-      {_command, message} ->
-        {:reply, message, state}
-      
-      :nocmd ->
-        {:reply, :error, state}
-    end
+  def handle_call({:read, message}, {from_pid, _ref}, %State{monitors: monitors} = state) do
+    
+    worker_pid = spawn_worker(message)
+
+    ref = Process.monitor(from_pid)
+
+    true = :ets.insert(monitors, {worker_pid, ref})
+
+    # possible kill spawned workers, maybe store them and use them if there are any
+
+    {:reply, :ok, state}
   end
 
+  def handle_info({:result, worker_pid, result}, state) do
+    IO.puts(result)
+    {:noreply, state}
+  end
 
   ### HELPER FUNCTIONS ###
-  
+  def spawn_worker(message) do
+    {:ok, pid} = Supervisor.start_child(Graze.WorkerSupervisor, [message])
+    pid
+  end
 
 end
