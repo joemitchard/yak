@@ -8,31 +8,33 @@ defmodule Graze.Worker do
 
   ### API ###
   # drop server and use static name
-  def start_link(message) do
-    GenServer.start_link(__MODULE__, message)
+  def start_link() do
+    GenServer.start_link(__MODULE__, [])
+  end
+
+  def process(pid, message) do
+    GenServer.cast(pid, {:process, message})
   end
 
   ### SERVER ###
-  def init(message) do
-    send(self(), {:process, message})
+  def init() do
     {:ok, %{}}
   end
 
-  def handle_info({:process, message}, state) do
-    IO.puts("#{inspect self()} processing")
+  def handle_cast({:process, message}, state) do
     case Parser.parse(message) do
-      {_command, message} ->
-        send_response(message)
-        {:stop, :normal, state}
+      {_command, msg} ->
+        complete(msg)
+        {:noreply, state}
       
       :nocmd ->
-        send_response(:nocmd)
-        {:stop, :normal, state}
+        complete(:nocmd)
+        {:noreply, state}
     end
   end
 
   ### PRIV ###
-  defp send_response(msg) do
+  defp complete(msg) do
     send(Graze.Server, {:result, self(), msg})
   end
 

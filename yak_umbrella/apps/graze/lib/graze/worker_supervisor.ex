@@ -9,8 +9,6 @@ defmodule Graze.WorkerSupervisor do
   end
 
   def init(_) do
-    # If anything in this pools tree fails, restart all
-
     worker_opts = [
       restart: :temporary,
       shutdown: 5000
