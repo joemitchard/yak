@@ -6,6 +6,12 @@ defmodule Graze do
   use Application
 
   def start(_type, _args) do
-    Graze.Supervisor.start_link(:ok)
+
+    opts = [
+      size: 0,
+      max_overflow: 1
+    ]
+
+    Graze.Supervisor.start_link(opts)
   end
 end

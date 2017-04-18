@@ -12,6 +12,10 @@ defmodule Graze.Worker do
     GenServer.start_link(__MODULE__, [])
   end
 
+  def stop(pid) do
+    GenServer.call(pid, :stop)
+  end
+
   def process(pid, message) do
     GenServer.cast(pid, {:process, message})
   end
@@ -19,6 +23,10 @@ defmodule Graze.Worker do
   ### SERVER ###
   def init() do
     {:ok, %{}}
+  end
+
+  def handle_call(:stop, _from, state) do
+    {:stop, :normal, :ok, state}
   end
 
   def handle_cast({:process, message}, state) do

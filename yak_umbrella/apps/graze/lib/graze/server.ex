@@ -3,10 +3,7 @@ defmodule Graze.Server do
   Graze server, handles parsing and handling of commands.
   """
 
-  # TODO -> Turn this into a pool of N amounts of workers, if one is available, use that
-  #         Otherwise rerutn :noproc and decide how to handle that on client.
-
-  # Workers still not exiting gracefully, need to spawn a pool of them (default 10?), use those as avaialble workers and queue the rest or return :no-roc if client not willing to block
+# needs more queues
 
   use GenServer
 
@@ -14,12 +11,14 @@ defmodule Graze.Server do
 
   defmodule State do
     defstruct monitors: nil,
-              workers: nil
+              workers: nil,
+              overflow: nil,
+              max_overflow: nil
   end
 
   ### API ###
-  def start_link() do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
   def read(message) when is_binary(message) do
@@ -27,28 +26,57 @@ defmodule Graze.Server do
   end
 
   ### SERVER ###
-  def init(:ok) do
-    n = 10
-    # take n from args
+  
+  def init(opts \\ []) do
     Process.flag(:trap_exit, true)
     monitors = :ets.new(:monitors, [:private])
-    workers = spawn_pool(n)
-    {:ok, %State{monitors: monitors, workers: workers}}
+    state = %State{monitors: monitors, overflow: 0}
+    init(opts, state)
+  end
+
+  def init([{:size, size} | rest], state) do
+    workers = spawn_pool(size)
+    init(rest, %{state | workers: workers})
+  end
+
+  def init([{:max_overflow, max_overflow} | rest], state) do
+    init(rest, %{state | max_overflow: max_overflow})
+  end
+
+  def init([_, rest], state), do: init(rest, state)
+  def init([], state) do
+    {:ok, state}
   end
 
   @doc """
   Uses an avaialble worker in the pool
   """
-  def handle_call({:read, message}, {from_pid, _ref}, %State{monitors: monitors, workers: workers} = state) do
+  def handle_call({:read, message}, {from_pid, _ref}, state) do
     
+    %{
+      monitors: monitors, 
+      workers: workers,
+      overflow: overflow,
+      max_overflow: max_overflow
+    } = state
+
     case workers do
       [worker | rest] ->
-        ref = Process.monitor(worker)
-        true = :ets.insert(monitors, {worker, {from_pid, ref}})
+        IO.puts("calling base")
+        ref = Process.monitor(from_pid)
+        true = :ets.insert(monitors, {worker, from_pid, ref})
         Worker.process(worker, message)
         {:reply, :ok, %{state | workers: rest}}
+
+      [] when max_overflow > 0 and overflow <= max_overflow ->
+        IO.puts("overflow")
+        {worker, ref} = spawn_worker(from_pid)
+        true = :ets.insert(monitors, {worker, from_pid, ref})
+        Worker.process(worker, message)
+        {:reply, :ok, %{state | overflow: overflow + 1}}
+
       [] ->
-        IO.puts("??????")
+        # TODO handle a queue of users?
         {:reply, :noproc, state}
     end
 
@@ -59,12 +87,28 @@ defmodule Graze.Server do
 
   When completes this puts the worker back in the pool
   """
-  def handle_info({:result, worker_pid, result}, %{monitors: monitors, workers: workers} = state) do
+  def handle_info({:result, worker_pid, result}, state) do
+
+    %{
+      monitors: monitors, 
+      workers: workers,
+      overflow: overflow
+    } = state
+
+    # TODO refactor this
+
     case :ets.lookup(monitors, worker_pid) do
-      [{worker_pid, {pid, ref}}] ->
+      [{worker_pid, from_pid, ref}] when overflow > 0 ->
         true = Process.demonitor(ref)
         true = :ets.delete(monitors, worker_pid)
-        respond(pid, result)
+        respond(from_pid, result)
+        Worker.stop(worker_pid)
+        {:noreply, %{state | overflow: overflow - 1}}
+
+      [{worker_pid, from_pid, ref}] ->
+        true = Process.demonitor(ref)
+        true = :ets.delete(monitors, worker_pid)
+        respond(from_pid, result)
         {:noreply, %{state | workers: [worker_pid | workers]}}
 
       [] ->
@@ -77,6 +121,8 @@ defmodule Graze.Server do
   This should respawn worker
   """
   def handle_info({:EXIT, pid, _reason}, state = %{monitors: monitors, workers: workers}) do
+
+    # TODO fix this
     case :ets.lookup(monitors, pid) do
       [{pid, {_from_pid, ref}}] ->
         true = Process.demonitor(ref)
@@ -102,6 +148,12 @@ defmodule Graze.Server do
     {:ok, pid} = Supervisor.start_child(Graze.WorkerSupervisor, [])
     Process.link(pid)
     pid
+  end
+
+  def spawn_worker(from_pid) do
+    worker = spawn_worker()
+    ref = Process.monitor(from_pid)
+    {worker, ref}
   end
 
   defp respond(pid, result) do
