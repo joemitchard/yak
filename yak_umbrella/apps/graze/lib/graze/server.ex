@@ -3,11 +3,13 @@ defmodule Graze.Server do
   Graze server, handles parsing and handling of commands.
   """
 
-# needs more queues
+  # needs more queues
+  # needs to handle crashed workers
 
   use GenServer
 
   alias Graze.Worker
+  alias Graze.WorkerSupervisor
 
   defmodule State do
     defstruct monitors: nil,
@@ -62,15 +64,13 @@ defmodule Graze.Server do
 
     case workers do
       [worker | rest] ->
-        IO.puts("calling base")
-        ref = Process.monitor(from_pid)
-        true = :ets.insert(monitors, {worker, from_pid, ref})
+        worker_ref = Process.monitor(worker)
+        true = :ets.insert(monitors, {worker, from_pid, worker_ref})
         Worker.process(worker, message)
         {:reply, :ok, %{state | workers: rest}}
 
       [] when max_overflow > 0 and overflow <= max_overflow ->
-        IO.puts("overflow")
-        {worker, ref} = spawn_worker(from_pid)
+        {worker, ref} = spawn_overflow_worker()
         true = :ets.insert(monitors, {worker, from_pid, ref})
         Worker.process(worker, message)
         {:reply, :ok, %{state | overflow: overflow + 1}}
@@ -95,47 +95,20 @@ defmodule Graze.Server do
       overflow: overflow
     } = state
 
-    # TODO refactor this
-
     case :ets.lookup(monitors, worker_pid) do
       [{worker_pid, from_pid, ref}] when overflow > 0 ->
-        true = Process.demonitor(ref)
-        true = :ets.delete(monitors, worker_pid)
-        respond(from_pid, result)
-        Worker.stop(worker_pid)
+        handle_completed(worker_pid, from_pid, ref, monitors, result)
+        dismiss_worker(worker_pid)
         {:noreply, %{state | overflow: overflow - 1}}
 
       [{worker_pid, from_pid, ref}] ->
-        true = Process.demonitor(ref)
-        true = :ets.delete(monitors, worker_pid)
-        respond(from_pid, result)
+        handle_completed(worker_pid, from_pid, ref, monitors, result)
         {:noreply, %{state | workers: [worker_pid | workers]}}
 
       [] ->
         {:noreply, state}
     end
   end
-
-  @doc """
-  Handles workers that crash
-  This should respawn worker
-  """
-  def handle_info({:EXIT, pid, _reason}, state = %{monitors: monitors, workers: workers}) do
-
-    # TODO fix this
-    case :ets.lookup(monitors, pid) do
-      [{pid, {_from_pid, ref}}] ->
-        true = Process.demonitor(ref)
-        true = :ets.delete(monitors, pid)
-        {:noreply, %{state | workers: [spawn_worker() | workers]}}
-
-      [] ->
-        # Process not monitored...?
-        IO.puts("worker crashed, no monitor")
-        {:noreply, state}
-    end
-  end
-
 
   ### HELPER FUNCTIONS ###
   defp spawn_pool(0), do: []
@@ -145,15 +118,26 @@ defmodule Graze.Server do
 
   # This will break, need to update worker to not start on init
   def spawn_worker() do
-    {:ok, pid} = Supervisor.start_child(Graze.WorkerSupervisor, [])
+    {:ok, pid} = Supervisor.start_child(WorkerSupervisor, [])
     Process.link(pid)
     pid
   end
 
-  def spawn_worker(from_pid) do
+  def spawn_overflow_worker() do
     worker = spawn_worker()
-    ref = Process.monitor(from_pid)
+    ref = Process.monitor(worker)
     {worker, ref}
+  end
+
+  defp dismiss_worker(pid) do
+    true = Process.unlink(pid)
+    Supervisor.terminate_child(WorkerSupervisor, pid)
+  end
+
+  defp handle_completed(worker_pid, from_pid, ref, monitors, result) do
+    true = Process.demonitor(ref)
+    true = :ets.delete(monitors, worker_pid)
+    respond(from_pid, result)
   end
 
   defp respond(pid, result) do
