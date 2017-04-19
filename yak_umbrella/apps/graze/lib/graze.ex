@@ -8,8 +8,8 @@ defmodule Graze do
   def start(_type, _args) do
 
     opts = [
-      size: 0,
-      max_overflow: 1
+      size: 10,
+      max_overflow: 5
     ]
 
     Graze.Supervisor.start_link(opts)
