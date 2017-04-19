@@ -3,10 +3,21 @@ defmodule Graze.Parser do
   A command parser for Graze.
   """
 
+  # possibly split the handler out from the parser
+
+  @doc """
+  Parse and handle the message
+  """
   def parse(message) when is_binary(message) do
     case get_command(message) do
-      {:test, rest} ->
-        {:test, String.reverse(rest)}
+      {:mirror, rest} ->
+        {:mirror, String.reverse(rest)}
+
+      {:up, rest} ->
+        {:up, String.upcase(rest)}
+
+      {:down, rest} ->
+        {:down, String.downcase(rest)}
 
       :nocmd ->
         :nocmd
@@ -17,8 +28,14 @@ defmodule Graze.Parser do
 
   defp get_command(command) do
     case String.split(command, " ", parts: 2) do
-      ["/test", rest] ->
-        {:test, rest}
+      ["/mirror", rest] ->
+        {:mirror, rest}
+
+      ["/up", rest] ->
+        {:up, rest}
+
+      ["/down", rest] ->
+        {:down, rest}
         
       _ ->
         :nocmd

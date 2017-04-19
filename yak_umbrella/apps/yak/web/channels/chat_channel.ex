@@ -71,7 +71,9 @@ defmodule Yak.ChatChannel do
       user
       |> build_assoc(:messages, chat_id: socket.assigns.chat_id)
       |> Yak.Message.changeset(params)
-    
+
+   IO.puts(inspect changeset)
+
     case Repo.insert(changeset) do
       # Normal case, broadcast message to other clients
       {:ok, message} ->
