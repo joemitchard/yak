@@ -4,6 +4,7 @@ defmodule Yak.ChatChannel do
   alias Yak.MessageView
   alias Yak.UserView
   alias Yak.Chat.Monitor
+  alias Yak.Chat.Waiting
 
   @doc """
   Handles join requests from the client
@@ -83,10 +84,10 @@ defmodule Yak.ChatChannel do
     end
   end
 
+  @doc """
+  Handles inbound commands and sends them to Graze for parsing
+  """
   def handle_in("new_command", params, _user, socket) do
-
-    # Here I should ask the server to process the message,
-    # On reply, I should handle the message
 
     case Map.fetch(params, "body") do
       {:ok, command} ->
@@ -106,6 +107,23 @@ defmodule Yak.ChatChannel do
     broadcast_new_user(socket, user)
     {:noreply, socket}
   end
+
+  @doc """
+  Handles responses from the Graze application, pushing the response to the user
+  """
+  def handle_info({_worker_ref, {:processed, ref, result}}, socket) do
+    {client_socket, command} = Waiting.get(ref)
+
+    case result do
+      :nocmd ->
+        push_command(client_socket, {false, command})
+      _ ->
+        push_command(client_socket, {true, result})
+    end
+    
+    {:noreply, socket}
+  end
+
 
   # inform clients of a new user joining
   defp broadcast_new_user(socket, user) do
@@ -131,16 +149,19 @@ defmodule Yak.ChatChannel do
     broadcast! socket, "new_message", rendered_msg
   end
 
+  # Pushes a single command to a client
   defp push_command(socket, {succeeded, result}) do
     renderd_cmd = Phoenix.View.render(MessageView, "command.json", %{succeeded: succeeded, result: result})
 
     push socket, "new_command", renderd_cmd
   end
 
+  # Puts the command and socket to the waiting queue and sends it for parsing
   defp process_command(socket, command) do
-    # here I need to store the socket in an agent with a unique ref
-    # Pass the command to the process mapper
-    # On receive of the message, get the process info and handle it using push_command
+    ref = make_ref()
 
+    :ok = Graze.Server.read(ref, command)
+  
+    Waiting.put(ref, {socket, command})
   end
 end

@@ -23,8 +23,8 @@ defmodule Graze.Server do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  def read(message) when is_binary(message) do
-    GenServer.call(__MODULE__, {:read, message})
+  def read(ref, message) when is_binary(message) do
+    GenServer.call(__MODULE__, {:read, ref, message})
   end
 
   ### SERVER ###
@@ -54,7 +54,7 @@ defmodule Graze.Server do
   @doc """
   Uses an avaialble worker in the pool to process a message
   """
-  def handle_call({:read, message}, {from_pid, _ref} = from, state) do
+  def handle_call({:read, client_ref, message}, {from_pid, _ref} = from, state) do
     
     %{
       monitors: monitors, 
@@ -66,16 +66,16 @@ defmodule Graze.Server do
 
     case workers do
       [worker | rest] ->
-        handle_read({from_pid, from}, worker, message, monitors)
+        handle_read({from_pid, from}, worker, {client_ref, message}, monitors)
         {:reply, :ok, %{state | workers: rest}}
 
       [] when max_overflow > 0 and overflow <= max_overflow ->
         worker = spawn_overflow_worker()
-        handle_read({from_pid, from}, worker, message, monitors)
+        handle_read({from_pid, from}, worker, {client_ref, message}, monitors)
         {:reply, :ok, %{state | overflow: overflow + 1}}
 
       [] ->
-        :queue.in({from, message}, waiting)
+        :queue.in({from, {client_ref, message}}, waiting)
         {:reply, :noproc, state}
     end
 
@@ -93,10 +93,10 @@ defmodule Graze.Server do
     } = state
 
     case :ets.lookup(monitors, worker_pid) do
-      [{worker_pid, from, ref}] ->
+      [{worker_pid, from, ref, client_ref}] ->
         true = Process.demonitor(ref)
         true = :ets.delete(monitors, worker_pid)
-        new_state = handle_completed({from, result}, worker_pid, state)
+        new_state = handle_completed({from, result, client_ref}, worker_pid, state)
         {:noreply, new_state}
 
       [] ->
@@ -128,15 +128,15 @@ defmodule Graze.Server do
   end
 
 
-  defp handle_read({from_pid, from}, worker, message, monitors) do
+  defp handle_read({from_pid, from}, worker, {client_ref, message}, monitors) do
     ref = Process.monitor(from_pid)
-    true = :ets.insert(monitors, {worker, from, ref})
+    true = :ets.insert(monitors, {worker, from, ref, client_ref})
     Worker.process(worker, message)
   end
 
   # Handles completed workers, if there is a user in the queue it 
   # puts the worker back to work on next in queue
-  defp handle_completed({from, result}, worker_pid, state) do
+  defp handle_completed({from, result, client_ref}, worker_pid, state) do
     %{ 
       waiting: waiting,
       workers: workers,
@@ -145,26 +145,26 @@ defmodule Graze.Server do
     } = state
 
     case :queue.out(waiting) do
-      {{:value, {from, message}}, rest} ->
+      {{:value, {from, {client_ref, message}}}, rest} ->
         worker_ref = Process.monitor(worker_pid)
-        true = :ets.insert(monitors, {worker_pid, from, worker_ref})
+        true = :ets.insert(monitors, {worker_pid, from, worker_ref, client_ref})
         Worker.process(worker_pid, message)
         %{state | waiting: rest}
       
       {:empty, rest} when overflow > 0 ->
-        respond(from, result)
+        respond(from, result, client_ref)
         dismiss_worker(worker_pid)
         %{state | waiting: rest, overflow: overflow - 1}
       
       {:empty, rest} ->
-        respond(from, result)
+        respond(from, result, client_ref)
         %{state | waiting: rest, workers: [worker_pid | workers]}
 
     end
   end
 
-  defp respond(from, result) do
-    GenServer.reply(from, {:processed, result})
+  defp respond(from, result, client_ref) do
+    GenServer.reply(from, {:processed, client_ref, result})
   end
 
 end

@@ -9,6 +9,8 @@ defmodule Yak do
       supervisor(Yak.Endpoint, []),
 
       worker(Yak.Chat.Monitor, []),
+      worker(Yak.Chat.Waiting, []),
+
       worker(Yak.UserMonitor, [])
     ]
 
