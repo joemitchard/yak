@@ -11,4 +11,14 @@ defmodule Yak.MessageView do
       user: render_one(msg.user, Yak.UserView, "user.json")
     }
   end
+
+  @doc """
+  Renders a command result as json
+  """
+  def render("command.json", %{succeeded: suceeded, result: result}) do
+    %{
+      suceeded: suceeded,
+      result: result
+    }
+  end
 end

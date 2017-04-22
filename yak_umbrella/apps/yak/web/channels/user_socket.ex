@@ -2,7 +2,6 @@ defmodule Yak.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "room:*", Yak.RoomChannel
   channel "chats:*", Yak.ChatChannel
 
   ## Transports

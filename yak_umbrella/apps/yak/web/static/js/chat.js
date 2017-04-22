@@ -25,9 +25,7 @@ let Chat = {
       // message payload
       let payload = { body: msgInput.value }
 
-      // push the message to the channel
-      chatChannel.push("new_message", payload)
-        .receive("error", e => console.log(e))
+      this.push_message(chatChannel, payload)
 
       // reset
       msgInput.value = ""
@@ -42,6 +40,10 @@ let Chat = {
     chatChannel.on("new_message", (resp) => {
       chatChannel.params.last_seen_id = resp.id
       this.renderMessage(msgContainer, resp)
+    })
+
+    chatChannel.on("new_command", (resp) => {
+      this.renderCommand(msgContainer, resp)
     })
 
     chatChannel.on("new_user", (resp) => {
@@ -68,6 +70,18 @@ let Chat = {
       .receive("error", reason => console.log("join failed", reason))
   },
 
+  push_message(channel, payload) {
+    // push the message to the channel
+
+    if(payload.body.startsWith("/")) {
+      channel.push("new_command", payload)
+        .receive("error", e => console.log(e))
+    } else {
+      channel.push("new_message", payload)
+        .receive("error", e => console.log(e))
+    }
+  },
+
   esc(str) {
     let div = document.createElement("div")
 
@@ -86,7 +100,22 @@ let Chat = {
 
     let template = document.createElement("div")
 
-    dom.add(template, `<a href="#" ><b>${this.esc(user.username)}</b>: ${this.esc(body)} </a`)
+    dom.add(template, `<a href="#" ><b>${this.esc(user.username)}</b>: ${this.esc(body)} </a>`)
+
+    dom.add(msgContainer, template)
+
+    msgContainer.scrollTop = msgContainer.scrollHeight
+  },
+
+  renderCommand(msgContainer, { suceeded, result }) {
+    
+    let template = document.createElement("div")
+
+    if (suceeded) {
+      dom.add(template, `<a href="#"><b>Command</b>: ${this.esc(result)}</a>`)
+    } else {
+      dom.add(template, `<a href="#"><b>Command</b>: No command found.</a>`)
+    }
 
     dom.add(msgContainer, template)
 

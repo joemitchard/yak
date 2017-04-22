@@ -1,4 +1,4 @@
-defmodule Yak.ChannelMonitor do
+defmodule Yak.Chat.Monitor do
   @moduledoc """
   A GenServer to maintain a map of the current state in each channel.
   """

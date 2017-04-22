@@ -3,7 +3,7 @@ defmodule Yak.ChatChannel do
 
   alias Yak.MessageView
   alias Yak.UserView
-  alias Yak.ChannelMonitor
+  alias Yak.Chat.Monitor
 
   @doc """
   Handles join requests from the client
@@ -26,7 +26,7 @@ defmodule Yak.ChatChannel do
         preload: [:user]
     )
 
-    current_users = ChannelMonitor.join(chat_id, user)
+    current_users = Monitor.join(chat_id, user)
 
     send self(), {:new_user, user}
 
@@ -46,7 +46,7 @@ defmodule Yak.ChatChannel do
     user_id = socket.assigns.user_id
     chat_id = socket.assigns.chat_id
 
-    users = ChannelMonitor.leave(chat_id, user_id)
+    users = Monitor.leave(chat_id, user_id)
   
     broadcast_users_update(socket, users)
 
@@ -72,8 +72,6 @@ defmodule Yak.ChatChannel do
       |> build_assoc(:messages, chat_id: socket.assigns.chat_id)
       |> Yak.Message.changeset(params)
 
-   IO.puts(inspect changeset)
-
     case Repo.insert(changeset) do
       # Normal case, broadcast message to other clients
       {:ok, message} ->
@@ -83,6 +81,22 @@ defmodule Yak.ChatChannel do
       {:error, changeset} ->
         {:reply, {:error, %{errors: changeset}}, socket}
     end
+  end
+
+  def handle_in("new_command", params, _user, socket) do
+
+    # Here I should ask the server to process the message,
+    # On reply, I should handle the message
+
+    case Map.fetch(params, "body") do
+      {:ok, command} ->
+        # push_command(socket, {true, command})
+        process_command(socket, command)
+
+      nil ->
+        push_command(socket, {false, ""})
+    end
+    {:reply, :ok, socket}
   end
 
   @doc """
@@ -115,5 +129,18 @@ defmodule Yak.ChatChannel do
     rendered_msg = Phoenix.View.render(MessageView, "message.json", %{message: message})
 
     broadcast! socket, "new_message", rendered_msg
+  end
+
+  defp push_command(socket, {succeeded, result}) do
+    renderd_cmd = Phoenix.View.render(MessageView, "command.json", %{succeeded: succeeded, result: result})
+
+    push socket, "new_command", renderd_cmd
+  end
+
+  defp process_command(socket, command) do
+    # here I need to store the socket in an agent with a unique ref
+    # Pass the command to the process mapper
+    # On receive of the message, get the process info and handle it using push_command
+
   end
 end
