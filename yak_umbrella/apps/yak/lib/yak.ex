@@ -8,8 +8,7 @@ defmodule Yak do
       supervisor(Yak.Repo, []),
       supervisor(Yak.Endpoint, []),
 
-      worker(Yak.Chat.Monitor, []),
-      worker(Yak.Chat.Waiting, []),
+      supervisor(Yak.Chat.Supervisor, []),
 
       worker(Yak.UserMonitor, [])
     ]

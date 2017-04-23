@@ -3,43 +3,58 @@ defmodule Graze.Parser do
   A command parser for Graze.
   """
 
-  # possibly split the handler out from the parser
-
-  @doc """
-  Parse and handle the message
-  """
-  def parse(message) when is_binary(message) do
-    case get_command(message) do
-      {:mirror, rest} ->
-        {:mirror, String.reverse(rest)}
-
-      {:up, rest} ->
-        {:up, String.upcase(rest)}
-
-      {:down, rest} ->
-        {:down, String.downcase(rest)}
-
-      :nocmd ->
-        :nocmd
-    end
-
+  defmodule Command do
+    defstruct command: nil,
+              name: nil,
+              fun: nil,
+              description: nil
   end
 
+  @doc """
+  Parse the message
+  """
+  def parse(message) when is_binary(message) do
+    get_command(message)
+  end
 
+  defp get_commands() do
+    [
+      %Command{command: "mirror", name: :mirror,  fun: &String.reverse/1,   description: "Reverse the input."},
+      %Command{command: "up",     name: :up,      fun: &String.upcase/1,    description: "Convert the input to upper case."},
+      %Command{command: "down",   name: :down,    fun: &String.downcase/1,  description: "Convert the input to lower case."},
+      %Command{command: "list",   name: :lists,   fun: &list/0,             description: "List the available commands."}
+    ]
+  end
+
+  # Parse `command`, finding a match from the list of Commands
   defp get_command(command) do
     case String.split(command, " ", parts: 2) do
-      ["/mirror", rest] ->
-        {:mirror, rest}
+      # The command begins with "/", now need to find a matching command and process it
+      ["/"<>action, rest] ->
+        cmd = find_command(action)
+        get_command(cmd, rest)
 
-      ["/up", rest] ->
-        {:up, rest}
+      ["/"<>action] ->
+        cmd = find_command(action)
+        get_command(cmd, [])
 
-      ["/down", rest] ->
-        {:down, rest}
-        
       _ ->
         :nocmd
     end
   end
 
+  defp get_command(:nocmd, _rest), do: :nocmd
+  defp get_command(cmd, []), do: {cmd.name, cmd.fun}
+  defp get_command(cmd, rest), do: {cmd.name, cmd.fun, rest}
+
+  defp find_command(action) do 
+    get_commands()
+    |> Enum.find(:nocmd, &(&1.command == action))
+  end
+
+  defp list() do
+    get_commands()
+    |> Enum.map(&("/#{&1.command}: #{&1.description}"))
+    |> Enum.join("\n")
+  end
 end
