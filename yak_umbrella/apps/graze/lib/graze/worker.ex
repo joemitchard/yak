@@ -5,6 +5,7 @@ defmodule Graze.Worker do
   use GenServer
 
   alias Graze.Parser
+  alias Graze.Handler
 
   ### API ###
   # drop server and use static name
@@ -22,7 +23,13 @@ defmodule Graze.Worker do
   end
 
   def handle_cast({:process, message}, state) do
-    case Parser.parse(message) do
+
+    result = 
+      message
+      |> Parser.parse()
+      |> Handler.handle()
+
+    case result do
       {_command, msg} ->
         complete(msg)
         {:noreply, state}
