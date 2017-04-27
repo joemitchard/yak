@@ -8,7 +8,6 @@ defmodule Yak.Auth do
   import Phoenix.Controller
 
   alias Yak.Router.Helpers
-  alias Yak.UserMonitor
 
   @doc """
   Initialises the plug, takes the repo option passed.
@@ -74,7 +73,7 @@ defmodule Yak.Auth do
   """
   def login(conn, user) do
 
-    UserMonitor.user_in(user)
+    # UserMonitor.user_in(user)
 
     conn
     |> put_current_user(user)
@@ -86,7 +85,7 @@ defmodule Yak.Auth do
   Drops the session.
   """
   def logout(conn) do
-    UserMonitor.user_out(conn.assigns.current_user)
+    # UserMonitor.user_out(conn.assigns.current_user)
     configure_session(conn, drop: true)
   end
 

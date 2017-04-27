@@ -22,7 +22,7 @@ defmodule Graze.Parser do
       %Command{command: "mirror", name: :mirror,  fun: &String.reverse/1,   description: "Reverse the input."},
       %Command{command: "up",     name: :up,      fun: &String.upcase/1,    description: "Convert the input to upper case."},
       %Command{command: "down",   name: :down,    fun: &String.downcase/1,  description: "Convert the input to lower case."},
-      %Command{command: "list",   name: :lists,   fun: &list/0,             description: "List the available commands."}
+      %Command{command: "list",   name: :list,    fun: &list/0,             description: "List the available commands."}
     ]
   end
 

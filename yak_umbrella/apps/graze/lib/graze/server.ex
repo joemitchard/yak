@@ -76,7 +76,7 @@ defmodule Graze.Server do
 
       [] ->
         :queue.in({from, {client_ref, message}}, waiting)
-        {:reply, :noproc, state}
+        {:reply, :ok, state}
     end
 
   end
@@ -102,6 +102,22 @@ defmodule Graze.Server do
       [] ->
         {:noreply, state}
     end
+  end
+
+  @doc """
+  Handle requesters that crash
+  """
+  def handle_info({:DOWN, _ref, _, _, _}, state = %{monitors: _monitors, workers: _workers}) do
+    {:noreply, state}
+    # TODO handle crashes
+    # case :ets.match(monitors, {:"$1", ref}) do
+    #   [[pid]] ->
+    #     true = :ets.delete(monitors, pid)
+    #     new_state = %{state | workers: [pid|workers]}
+    #     {:noreply, new_state}
+    #   [[]] ->
+    #     {:noreply, state}
+    # end
   end
 
   ### HELPER FUNCTIONS ###

@@ -26,6 +26,7 @@ defmodule Yak.ConnCase do
       import Ecto.Query
 
       import Yak.Router.Helpers
+      import Yak.TestHelpers
 
       # The default endpoint for testing
       @endpoint Yak.Endpoint

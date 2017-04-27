@@ -10,7 +10,7 @@ defmodule Yak do
 
       supervisor(Yak.Chat.Supervisor, []),
 
-      worker(Yak.UserMonitor, [])
+      # worker(Yak.UserMonitor, [])
     ]
 
     opts = [strategy: :one_for_one, name: Yak.Supervisor]

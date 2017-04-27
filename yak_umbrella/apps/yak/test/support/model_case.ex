@@ -22,6 +22,7 @@ defmodule Yak.ModelCase do
       import Ecto.Changeset
       import Ecto.Query
       import Yak.ModelCase
+      import Yak.TestHelpers
     end
   end
 
