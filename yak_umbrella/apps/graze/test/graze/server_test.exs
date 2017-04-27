@@ -5,6 +5,7 @@ defmodule Graze.ServerTest do
 
   @valid_command("/mirror hello")
   @invalid_command("/test hello")
+  @mirror_result("olleh")
 
   setup do
 
@@ -39,12 +40,25 @@ defmodule Graze.ServerTest do
 
   test "executes :mirror correctly with valid req", _state do
     :ok = Server.read(make_ref(), @valid_command)
-    assert_receive {_ref, {:processed, _, "olleh"}}, 2_000
+    assert_receive {_ref, {:processed, _, @mirror_result}}
   end
 
   test "executes :mirror correctly with invalid req", _state do
     :ok = Server.read(make_ref(), @invalid_command)
-    assert_receive {_ref, {:processed, _, :nocmd}}, 2_000
+    assert_receive {_ref, {:processed, _, :nocmd}}
+  end
+
+  test "queued request get processed", _state do
+    :ok = Server.read(r1 = make_ref(), @valid_command)
+    :ok = Server.read(r2 = make_ref(), @valid_command)
+    :ok = Server.read(r3 = make_ref(), @valid_command)
+    :ok = Server.read(r4 = make_ref(), @valid_command)
+
+
+    assert_receive({_ref, {:processed, ^r1, @mirror_result}})
+    assert_receive({_ref, {:processed, ^r2, @mirror_result}})
+    assert_receive({_ref, {:processed, ^r3, @mirror_result}})
+    assert_receive({_ref, {:processed, ^r4, @mirror_result}})
   end
 
 end

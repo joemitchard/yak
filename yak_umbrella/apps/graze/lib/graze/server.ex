@@ -107,10 +107,13 @@ defmodule Graze.Server do
   @doc """
   Handle requesters that crash
   """
-  def handle_info({:DOWN, _ref, _, _, _}, state = %{monitors: _monitors, workers: _workers}) do
+  def handle_info({:DOWN, _ref, _, _, _}, state) do
+    # shell implementation, need to remove the requester from ets and call worker back
     {:noreply, state}
+  end
+  #def handle_info({:DOWN, _ref, _, _, _}, state = %{monitors: _monitors, workers: _workers}) do
     # TODO handle crashes
-    # case :ets.match(monitors, {:"$1", ref}) do
+    # case :ets.match(monitors, {:"$3", ref}) do
     #   [[pid]] ->
     #     true = :ets.delete(monitors, pid)
     #     new_state = %{state | workers: [pid|workers]}
@@ -118,7 +121,7 @@ defmodule Graze.Server do
     #   [[]] ->
     #     {:noreply, state}
     # end
-  end
+  #end
 
   ### HELPER FUNCTIONS ###
   defp spawn_pool(0), do: []
