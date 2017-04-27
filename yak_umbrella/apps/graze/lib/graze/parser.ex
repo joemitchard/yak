@@ -47,6 +47,7 @@ defmodule Graze.Parser do
   defp get_command(cmd, []), do: {cmd.name, cmd.fun}
   defp get_command(cmd, rest), do: {cmd.name, cmd.fun, rest}
 
+  # returns a command struct or :nocmd
   defp find_command(action) do 
     get_commands()
     |> Enum.find(:nocmd, &(&1.command == action))
