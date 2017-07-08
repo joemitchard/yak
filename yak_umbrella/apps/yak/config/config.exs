@@ -10,10 +10,10 @@ config :yak,
   ecto_repos: [Yak.Repo]
 
 # Configures the endpoint
-config :yak, Yak.Endpoint,
+config :yak, Yak.Web.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "kjSA6bA7iBJTrUIsyZBE2tk1aZshhf6AWaApKBMSayojyKYweQ5Sh2GY0fQzvrG6",
-  render_errors: [view: Yak.ErrorView, accepts: ~w(html json)],
+  render_errors: [view: Yak.Web.ErrorView, accepts: ~w(html json)],
   pubsub: [name: Yak.PubSub,
            adapter: Phoenix.PubSub.PG2]
 

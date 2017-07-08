@@ -1,11 +1,11 @@
 defmodule Yak.AuthTest do
-  use Yak.ConnCase
-  alias Yak.Auth
+  use Yak.Web.ConnCase
+  alias Yak.Web.Auth
 
   setup %{conn: conn} do
     conn =
       conn
-      |> bypass_through(Yak.Router, :browser) # pass though the browser pipe, acts as normal req
+      |> bypass_through(Yak.Web.Router, :browser) # pass though the browser pipe, acts as normal req
       |> get("/")
     {:ok, %{conn: conn}}
   end

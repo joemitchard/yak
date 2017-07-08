@@ -1,3 +1,3 @@
-defmodule Yak.PageViewTest do
-  use Yak.ConnCase, async: true
+defmodule Yak.Web.PageViewTest do
+  use Yak.Web.ConnCase, async: true
 end

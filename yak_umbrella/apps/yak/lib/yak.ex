@@ -1,4 +1,4 @@
-defmodule Yak do
+defmodule Yak.Application do
   use Application
 
   def start(_type, _args) do
@@ -6,7 +6,7 @@ defmodule Yak do
 
     children = [
       supervisor(Yak.Repo, []),
-      supervisor(Yak.Endpoint, []),
+      supervisor(Yak.Web.Endpoint, []),
 
       supervisor(Yak.Chat.Supervisor, []),
 
@@ -17,10 +17,4 @@ defmodule Yak do
     Supervisor.start_link(children, opts)
   end
 
-  # Tell Phoenix to update the endpoint configuration
-  # whenever the application is updated.
-  def config_change(changed, _new, removed) do
-    Yak.Endpoint.config_change(changed, removed)
-    :ok
-  end
 end

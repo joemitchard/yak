@@ -6,7 +6,7 @@
 **/*.ez
 
 # Static artifacts
-yak_umbrella/apps/yak/node_modules
+yak_umbrella/apps/yak/assets/node_modules
 
 # Since we are building assets from web/static,
 # we ignore priv/static. You may want to comment

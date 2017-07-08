@@ -1,3 +1,3 @@
-defmodule Yak.LayoutViewTest do
-  use Yak.ConnCase, async: true
+defmodule Yak.Web.LayoutViewTest do
+  use Yak.Web.ConnCase, async: true
 end

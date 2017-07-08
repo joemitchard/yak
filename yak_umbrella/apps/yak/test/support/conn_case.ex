@@ -1,4 +1,4 @@
-defmodule Yak.ConnCase do
+defmodule Yak.Web.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -25,11 +25,11 @@ defmodule Yak.ConnCase do
       import Ecto.Changeset
       import Ecto.Query
 
-      import Yak.Router.Helpers
+      import Yak.Web.Router.Helpers
       import Yak.TestHelpers
 
       # The default endpoint for testing
-      @endpoint Yak.Endpoint
+      @endpoint Yak.Web.Endpoint
     end
   end
 
