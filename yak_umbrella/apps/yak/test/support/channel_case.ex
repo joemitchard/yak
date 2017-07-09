@@ -1,4 +1,4 @@
-defmodule Yak.ChannelCase do
+defmodule Yak.Web.ChannelCase do
   @moduledoc """
   This module defines the test case to be used by
   channel tests.
@@ -27,7 +27,7 @@ defmodule Yak.ChannelCase do
 
 
       # The default endpoint for testing
-      @endpoint Yak.Endpoint
+      @endpoint Yak.Web.Endpoint
     end
   end
 
