@@ -8,7 +8,7 @@ defmodule Yak.TestHelpers do
   def insert_user(attrs \\ %{}) do
     changes = Dict.merge(%{
       name: "Long Name",
-      username: "user#{Base.encode16(:crypto.rand_bytes(8))}",
+      username: "user#{Base.encode16(:crypto.strong_rand_bytes(8))}",
       password: "supersecret",
       email: "email@somewhere.com"
     }, attrs)
